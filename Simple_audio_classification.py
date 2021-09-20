@@ -22,20 +22,22 @@ class MyDataset (Dataset):
         self.data['target'] = LabelEncoder().fit_transform(self.data['target'])
         self.n_sambles = len([f for f in os.listdir(
             self.path)if os.path.isfile(os.path.join(self.path, f))])
-
+    # retuerns the number of sambles in the dataset
     def __len__(self):
         return self.n_sambles
-
+    
     def __getitem__(self, index):
         tar = self.data['target'].iloc[index]
         wav_file = self.data['file_name'].iloc[index]
         waveform, sample_rate = torchaudio.load(
             os.path.join(self.path, wav_file))
+        
+        # transofrming the the audio file from wave form into MFCC form
         mfcc_spectrogram = torchaudio.transforms.MFCC(
             sample_rate=sample_rate)(waveform)
         return mfcc_spectrogram, tar
 
-
+# Creating the train and test datasets loaders 
 train_data = MyDataset(
     path='/mnt/23ce3591-a7a9-4853-8164-8609c66f367c/task1/data/train',
     csv_file='/mnt/23ce3591-a7a9-4853-8164-8609c66f367c/task1/train.csv')
@@ -55,7 +57,7 @@ train_loader= torch.utils.data.DataLoader(
     shuffle=True,
     num_workers=2)
 
-
+# the network architecture 
 class CNNet(nn.Module):
     def __init__(self):
         super().__init__()
@@ -81,7 +83,6 @@ learning_rate = 0.0001
 optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
 # Create the training function
-
 
 def train(dataloader, model, loss, optimizer):
     model.train()
